@@ -1,0 +1,2 @@
+# 4fortune
+for fortune
