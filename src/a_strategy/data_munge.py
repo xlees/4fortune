@@ -1,14 +1,43 @@
 #coding: utf-8
 '''
-Created on 2015��11��12��
 
 @author: Xiang
 '''
 
 import tushare as ts
 import numpy as np
+import pandas as pd
 from datetime import datetime
+import arrow
+import random
+import code
+from sympy.polys.polytools import nroots
 
+
+
+def download_tick_data(days=2):
+#     stocks = ts.get_stock_basics().index
+    stocks = random.sample(ts.get_stock_basics().index, 3)
+    _dates = ts.get_h_data('000001', index=True).index[:days]
+    dates = [x.to_datetime().strftime("%Y-%m-%d") for x in _dates]
+    
+    def tick(tstamp):
+        date = tstamp.split(" ")[0]
+        tick_data = ts.get_tick_data(code,date=date,retry_count =5,pause=1)
+        nrows = tick_data.shape[0]
+        tick_data['date'] = pd.Series([date]*nrows)
+        
+        return tick_data
+    
+    for code in stocks:
+        df = map(tick, dates)
+        print 'code=', code, '. list shape:\n', df[0].head(2)
+        
+        print 'saving stock data...'
+        result = pd.concat(df)
+        result.to_csv("%s.csv" % (code), mode='w',header=False,index=False)
+    
+    print 'stocks size: ',len(stocks), "head days: ", dates[:1]
 
 def check_if_reach_limit(code, date=datetime.now().strftime("%Y-%m-%d")):
     """
@@ -42,18 +71,20 @@ def check_if_reach_limit(code, date=datetime.now().strftime("%Y-%m-%d")):
     print 'starting index: ', p
     print 'starting time: ', stock.ix[stock.shape[0]-p-1]['time']
     
-    return True
+    return stock.ix[stock.shape[0]-p-1]['time']
 
 if __name__ == '__main__':
     print "tushare"
     tod = datetime.now().strftime("%Y-%m-%d")
     
-    df = ts.get_realtime_quotes('300480')   # 实时分笔
-    curdata = df.iloc[0]
-    print len(curdata)
-    print curdata[['name','price','ask','bid']]
+    download_tick_data()
     
-    print check_if_reach_limit('300382', '2015-11-12')
+#     df = ts.get_realtime_quotes('300480')   # 实时分笔
+#     curdata = df.iloc[0]
+#     print len(curdata)
+#     print curdata[['name','price','ask','bid']]
+#     
+#     print check_if_reach_limit('300382', '2015-11-12')
     
 #     fc = ts.forecast_data(2015,2)
 #     print fc.shape
