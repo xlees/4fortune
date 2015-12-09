@@ -11,7 +11,6 @@ from datetime import datetime
 import arrow
 import random
 import code
-from sympy.polys.polytools import nroots
 
 
 
@@ -29,13 +28,16 @@ def download_tick_data(days=2):
         
         return tick_data
     
+    cols = ['date','code','time','type','price','volume','amount']
     for code in stocks:
         df = map(tick, dates)
         print 'code=', code, '. list shape:\n', df[0].head(2)
         
         print 'saving stock data...'
         result = pd.concat(df)
-        result.to_csv("%s.csv" % (code), mode='w',header=False,index=False)
+        result['code'] = pd.Series([code]*result.shape[0])
+        
+        result[cols].to_csv("%s.csv" % (code), mode='w',header=False,index=False)
     
     print 'stocks size: ',len(stocks), "head days: ", dates[:1]
 
