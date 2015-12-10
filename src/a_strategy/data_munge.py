@@ -14,30 +14,45 @@ import code
 
 
 
-def download_tick_data(days=2):
+def download_tick_data(days=3):
+    stocks = random.sample(ts.get_stock_basics().index, 5)
 #     stocks = ts.get_stock_basics().index
-    stocks = random.sample(ts.get_stock_basics().index, 3)
     _dates = ts.get_h_data('000001', index=True).index[:days]
     dates = [x.to_datetime().strftime("%Y-%m-%d") for x in _dates]
     
     def tick(tstamp):
         date = tstamp.split(" ")[0]
-        tick_data = ts.get_tick_data(code,date=date,retry_count =5,pause=1)
+        tick_data = ts.get_tick_data(code,date=date,retry_count=10,pause=2)
         nrows = tick_data.shape[0]
         tick_data['date'] = pd.Series([date]*nrows)
         
         return tick_data
     
+    def trans(ttype):
+        _ttype = ttype.decode('utf-8')
+        if _ttype == u'买盘':
+            return 2
+        elif _ttype == u'卖盘':
+            return 1
+        else:
+            return 0
+    
     cols = ['date','code','time','type','price','volume','amount']
     for code in stocks:
-        df = map(tick, dates)
-        print 'code=', code, '. list shape:\n', df[0].head(2)
-        
-        print 'saving stock data...'
-        result = pd.concat(df)
-        result['code'] = pd.Series([code]*result.shape[0])
-        
-        result[cols].to_csv("%s.csv" % (code), mode='w',header=False,index=False)
+        try:
+            df = map(tick, dates)
+            print 'code=', code, '. list shape:\n', df[0].head(2)
+            
+            print 'saving stock data...'
+            result = pd.concat(df)
+            result['code'] = pd.Series([code]*result.shape[0])
+            
+            # change type to digit
+            result['type'] = map(trans, result['type'])
+            
+            result[cols].to_csv("stocks/%s.csv" % (code), mode='w',header=False,index=False)
+        except Exception as e:
+            print e
     
     print 'stocks size: ',len(stocks), "head days: ", dates[:1]
 
