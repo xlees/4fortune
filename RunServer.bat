@@ -1,6 +1,7 @@
 @echo off
-color 03
+rem color 03
 
-python _4fortune/manage.py runserver 0.0.0.0:8000 --noreload
+python _4fortune/manage.py runserver 0.0.0.0:8000
+rem python _4fortune/manage.py runserver 0.0.0.0:8000 --noreload
 
 echo . & pause
