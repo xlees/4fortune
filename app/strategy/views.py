@@ -2,10 +2,12 @@ from django.shortcuts import render,render_to_response
 import sqlalchemy, sqlalchemy.orm
 from sqlalchemy.orm import sessionmaker,scoped_session
 from models import *
+import services as srv
 from django.conf import settings
 import logging,json
 from django.views.generic import View
 from django.http import HttpResponse
+
 
 # engine = sqlalchemy.create_engine(settings.DATABASES['default']['NAME'])
 engine = sqlalchemy.create_engine('sqlite:///%s/dbase/common.sqlite3' % (settings.BASE_DIR),echo=True)
@@ -16,6 +18,8 @@ Session = scoped_session(sessionmaker(bind=engine))
 logger = logging.getLogger('django')
 logger.info("base_dir: "+settings.BASE_DIR)
 
+stocks = srv.getStockInfo('300212','002848')
+map(lambda x: logger.info(x), stocks)
 
 # entrance
 # def index(request):
